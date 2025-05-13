@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 8080;
 const NAME = process.env.NAME || 'node-service';
@@ -14,6 +15,25 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get('/ping', (req, res) => {
   res.send(`pong from ${NAME} service`);
+});
+
+app.get('/call-api', async (req, res) => {
+  const targetUrl = req.query.url;
+
+  if (!targetUrl) {
+    return res.status(200).json({  message: `Chamada sem target.` });
+  }
+
+  try {
+    const response = await axios.get(targetUrl);
+    res.json({
+      message: `Chamada a ${targetUrl} realizada com sucesso`,
+      data: response.data,
+    });
+  } catch (error) {
+    console.error(`Erro ao chamar serviço externo ${targetUrl}:`, error.message);
+    res.status(500).json({ error: `Erro ao chamar serviço externo ${targetUrl}` });
+  }
 });
 
 app.get('/', (req, res) => {
